@@ -18,6 +18,7 @@ suppressPackageStartupMessages({
   library(here)
   library(ggtree)
   library(gplots)
+  library(hyperSpec)
   library(LSD)
   library(org.Hs.eg.db)
   library(plotly)
