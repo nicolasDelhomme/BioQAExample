@@ -15,9 +15,13 @@ options(connectionObserver = NULL)
 suppressPackageStartupMessages({
   library(DESeq2)
   library(edgeR)
+  library(here)
   library(ggtree)
+  library(gplots)
   library(LSD)
   library(org.Hs.eg.db)
+  library(plotly)
+  library(pvclust)
   library(RColorBrewer)
   library(SummarizedExperiment)
   library(tidyverse)
@@ -25,6 +29,12 @@ suppressPackageStartupMessages({
   library(tximeta)
   library(vsn)
 })
+#' * Helper functions
+source(here("UPSCb-common/src/R/featureSelection.R"))
+
+#' * Graphics
+hpal <- colorRampPalette(c("blue","white","red"))(100)
+
 
 #' * Graphics
 pal <- brewer.pal(8,"Dark2")
