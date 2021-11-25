@@ -4,7 +4,7 @@ options(connectionObserver = NULL)
 library(here)
 datadir <- here("~/raw_data")
 
-meta <- read.delim(here("airway/airway_meta.txt"), 
+meta <- read.delim(here("~/raw_data/airway/airway_meta.txt"), 
                    header = TRUE, as.is = TRUE)
 rownames(meta) <- meta$names
 
@@ -25,7 +25,7 @@ meta
 #                     isPairedEnd = TRUE, 
 #                     nthreads = 6)
 
-fc <- readRDS(here("airway/featureCounts/star_featureCounts.rds"))
+fc <- readRDS(here("~/raw_data/airway/featureCounts/star_featureCounts.rds"))
 names(fc)
 counts_featurecounts <- fc$counts
 head(counts_featurecounts)
@@ -40,7 +40,7 @@ suppressPackageStartupMessages({
 })
 
 ## List all quant.sf output files from Salmon
-salmonfiles <- here("airway/salmon/", meta$names, "/quant.sf")
+salmonfiles <- here("~/raw_data/airway/salmon/", meta$names, "/quant.sf")
 names(salmonfiles) <- meta$names
 stopifnot(all(file.exists(salmonfiles)))
 
