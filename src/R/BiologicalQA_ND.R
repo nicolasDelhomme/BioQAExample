@@ -322,7 +322,7 @@ biplot(p,x = 'PC1', y = 'PC3',
 #' 
 suppressMessages(pairsplot(p,colby='Tissue',shape='Stage'))
 
-#' `r emoji("point_right")` **CHANGEME**
+#' `r emoji("point_right")` **While PC 1 to 3 can be linked to the study design, it looks more like PC4 and 5 are linked to individual samples.**
 #' 
 #' ### Loadings
 #' Loadings, _i.e._ the individual effect of every gene in a component can be studied. Here the most important ones are visualized throughout the different PCs
@@ -334,38 +334,26 @@ plotloadings(p,
              caption = 'Top 1% variables',
              drawConnectors = TRUE)
 
-#' `r emoji("point_right")` **CHANGEME**
+#' `r emoji("point_right")` **These are genes that have a strong influence in the different components. Probably interesting candidates to look at, in a non-DE fashion, although they are likely to be DE, given the first three PCs are linked to our design.**
 #' 
 #' ### Correlation
 #' This is a plot showing the correlation between the PC and the model variables. Note that while this might be relevant 
 #' for a linear variable, it is less so for categorical variables. Sorting categorical variables in a linear order according to the PCs above might help.
 #' 
-#' ```{r beffect, echo=FALSE, eval=FALSE
-#' # You could do as follows to reorder a categorial variable
-#' p$metadata$Beffect <- ifelse(as.integer(dds$Batch)==1,3,as.integer(dds$Batch)-1)
-#' ````
-#' 
-#' 
-#' Plotting only the relevant variables.
-#' 
-#' ```{r validation, echo=FALSE, eval=FALSE}
-#' # Plotting all the variables just as a control, the categorical and the transformed ones.
-#' suppressWarnings(eigencorplot(p,metavars=c('Beffect','Day',"Batch","Time")))
-#' ```
-suppressWarnings(eigencorplot(p,metavars=c('CHANGEME','CHANGEME')))
+suppressWarnings(eigencorplot(p,metavars=c('Tissue','Stage')))
 
-#' `r emoji("point_right")` **CHANGEME**
+#' `r emoji("point_right")` **Keep in mind that the two variables are categorical, so they have been assigned an integer value based on that. They are not truly continuous variables. But clearly as we could see PC1 is strongly linked to Tissue and PC2 to Stage.**
 #' 
 #' ### Samples Distance
 sampleDists <- dist(t(assay(vsd)))
 sampleDistMatrix <- as.matrix(sampleDists)
-rownames(sampleDistMatrix) <- colnames(sampleDistMatrix) <- dds$SampleID
+rownames(sampleDistMatrix) <- colnames(sampleDistMatrix) <- paste(dds$Tissue,dds$Stage)
 pheatmap(sampleDistMatrix,
          clustering_distance_rows=sampleDists,
          clustering_distance_cols=sampleDists,
          col=pal)
 
-#' `r emoji("point_right")` **CHANGEME**
+#' `r emoji("point_right")` **The sample distance clusters samples as expected**
 #' 
 #' ## Sequencing depth
 #' The figures show the number of genes expressed per condition at different expression cutoffs. The scale on the lower plot is the same as on the upper.
@@ -373,19 +361,19 @@ pheatmap(sampleDistMatrix,
 #' given variable(s) divided by the average number of genes expressed at that cutoff across all variable(s). The latter plot is of course biased at higher cutoff 
 #' as the number of genes becomes smaller and smaller.
 #' The point of these two plots is to assert whether the number of genes expressed varies between conditions, as this would break some assumptions for normalisation and differential expression.
-conds <- factor(paste(dds$CHANGEME,dds$CHANGEME))
+conds <- factor(paste(dds$Tissue,dds$Stage))
 dev.null <- rangeSamplesSummary(counts=vst,
                                 conditions=conds,
                                 nrep=3)
 
-#' `r emoji("point_right")` **CHANGEME**
+#' `r emoji("point_right")` **As expected from the raw data QC, the FMG samples have more genes expressed at a higher value than the ZE. This is most likely indicative of a bias in the number of genes expressed with the FMG expressing less genes overall. The library size correction would then "wrongly" inflate the expression of the genes for the FMG. This is because we are breaking the assumption from DESeq2 that there are the same number of genes expressed across samples.**
 #' 
 #' Plotting the number of genes that are expressed (at any level)
-do.call(rbind,split(t(nrow(vst) - colSums(vst==0)),samples$CHANGEME)) %>% as.data.frame() %>% 
-  rownames_to_column("CHANGEME") %>% pivot_longer(starts_with("V")) %>% 
-  ggplot(aes(x=CHANGEME, y=value, fill=CHANGEME)) + geom_dotplot(binaxis = "y", stackdir = "center")
+do.call(rbind,split(t(nrow(vst) - colSums(vst==0)),samples$Tissue)) %>% as.data.frame() %>% 
+  rownames_to_column("Tissue") %>% pivot_longer(starts_with("V")) %>% 
+  ggplot(aes(x=Tissue, y=value, fill=Tissue)) + geom_dotplot(binaxis = "y", stackdir = "center")
 
-#' `r emoji("point_right")` **CHANGEME**
+#' `r emoji("point_right")` **As suspected, the FMG has about 10000 less genes expressed than the ZE. This is probably due to the low expressed genes (but not necessarily). Here it would be good to do some stronger filtering on the transcripts we are using for salmon.**
 #' 
 #' ## Heatmap
 #' 
@@ -399,8 +387,8 @@ sels <- rangeFeatureSelect(counts=vst,
                            nrep=3) %>% 
   suppressWarnings()
 
-#' `r emoji("point_right")` **Here a cutoff of CHANGEME is applied**
-vst.cutoff <- 2
+#' `r emoji("point_right")` **Here a cutoff of 5 is applied (reason is 20000 genes can still be classified by a hierarchical clustering in a decent amount of time)**
+vst.cutoff <- 5
 
 nn <- nrow(vst[sels[[vst.cutoff+1]],])
 tn <- nrow(vst)
@@ -408,26 +396,6 @@ pn <- round(nn * 100/ tn, digits=1)
 
 #' `r emoji("warning")` **`r pn`%** (`r nn`) of total `r tn` genes are plotted below:
 #'
-#' ```{r CHANGEME9,eval=FALSE,echo=FALSE}
-#' Optionally You can decide which variable to select for annotation. 
-#' add the following to your pheatmap call (select the variable you want)
-#' This will be a colored ribbon on top of the heatmap for better reading
-#' annotation_col = samples %>% select(CHANGEME) %>% as.data.frame()
-#' 
-#' if you want, you can also modify the colors to better match with previous graphs. 
-#' e.g. if you want a colored ribbon for Temperature (16,23,27) (adjust this example based on your need and add to pheatmap call)
-#' annotation_colors = list(Temperature = c("23" = "#F8766D", "16" = "#00BF7D", "27" = "#00B0F6"))
-#' 
-#' Alternatively you can use the heatmap.2 version
-#' #heatmap.2 version
-#' hm <- heatmap.2(t(scale(t(vst[sels[[vst.cutoff+1]],]))),
-#'                 distfun=pearson.dist,
-#'                 hclustfun=function(X){hclust(X,method="ward.D2")},
-#'                 labRow = NA,
-#'                 trace = "none",
-#'                 labCol = conds,
-#'                 col=hpal)
-#' ```
 #'  
 mat <- t(scale(t(vst[sels[[vst.cutoff+1]],])))
 hm <- pheatmap(mat,
@@ -440,13 +408,9 @@ hm <- pheatmap(mat,
                angle_col = 90,
                legend = FALSE)
 
-#' `r emoji("point_right")` **CHANGEME**
+#' `r emoji("point_right")` **The samples cluster as expected, note though that now the stage has a stronger importance than the tissue in the grouping!**
 #'
 #' ## Clustering of samples
-#' ```{r echo=FALSE,eval=FALSE}
-#' # Developer: This wouldonly works with the gplots heatmap.2, not the pheatmap
-#' plot(as.hclust(hm$colDendrogram),xlab="",sub="")
-#' ```
 #'
 #' Below we assess the previous dendrogram's reproducibility and plot the clusters with au and bp where:
 #' 
@@ -457,41 +421,30 @@ hm <- pheatmap(mat,
 #' 
 hm.pvclust <- pvclust(data = t(scale(t(vst[sels[[vst.cutoff+1]],]))),
                        method.hclust = "ward.D2", 
-                       nboot = 100, parallel = TRUE)
+                       nboot = 30, parallel = TRUE)
 
 plot(hm.pvclust, labels = conds)
 pvrect(hm.pvclust)
 
-#' `r emoji("point_right")` **CHANGEME**
+#' `r emoji("point_right")` **The classification here is similar and place the stage together**
 #' 
-#' <details><summary>bootstrapping results as a table</summary>
-#' ```{r bootstrapping results as a table}
-#' print(hm.pvclust, digits=3)
-#' ```
-#' </details>
-#' 
-#' ```{tech rep, echo=FALSE, eval=FALSE}
-#' # The block of code is meant to combine tech reps - as it is facultative it is commented out
-#' # First create a new variable in your sample object called BioID that identifies uniquely technical replicates, so one value for all tech rep of the same bio rep
-#' samples$BioID <- CHANGEME
-#' # Merging technical replicates
-#' txi$counts <- sapply(split.data.frame(t(txi$counts),samples$BioID),colSums)
-#' txi$length <- sapply(split.data.frame(t(txi$length),samples$BioID),colMaxs)
-#' # Counts are now in alphabetic order, check and reorder if necessary
-#' stopifnot(colnames(txi$counts) == samples$BioID)
-#' samples <- samples[match(colnames(txi$counts),samples$BioID),]
-#' # Recreate the dds
-#' dds <- DESeqDataSetFromTximport(
-#'   txi=txi,
-#'   colData = samples,
-#'   design = ~ Tissue)
-#'```
-#'
 #' <hr />
 #' &nbsp;
 #' 
 #' # Summary
-#' `r emoji("star")` **CHANGE-ME**
+#' `r emoji("star")` **The data is of good quality**
+#' 
+#' `r emoji("star")` **The replicates group together**
+#' 
+#' `r emoji("star")` **The PCA first three components are relevant biologically**
+#' 
+#' `r emoji("star")` **There is good evidence that there will be DE genes as a result of the selected design**
+#' 
+#' `r emoji("star")` **The FMG has an average 10000 less genes expressed than the ZE, affecting the library size correction and hence the possible DE results.**
+#' 
+#' `r emoji("star")` **The aforementioned limitation could be addressed by trying to 1. selecting the transcripts more aggressively so as to remove lowly expressed ones - or putative transposable elements or 2. modelling the expression difference and correcting the library size factor correspondingly**
+#' 
+#' `r emoji("star")` **A third alternative is to run the DE but imposes more stringent cutoffs on the log2 fold changes or to use the independent filtering to help remove uninformative transcripts from the analysis, prior to rerunning the QA and DE.**
 #' 
 #' ```{r empty,eval=FALSE,echo=FALSE}
 #' ```
