@@ -4,7 +4,7 @@
 
 This is a companion file to the tutorial 07_non_model_organism_exploratory_data_analysis from this [repos](https://github.com/Bn-Bioinformatics-Handelsbolag/RnaSeqTutorials).
 
-In the tutorial we realised that one sample was undersampled. Unfortunately, that sample could not be recreated. Instead another replicate was generated and is being used here, in an iteration of the Exploratory Data Analysis for that project.
+In the tutorial we realised that one sample was undersampled. Unfortunately, that sample could not be recreated. Instead another replicate from an earlier time point (B3) is being used here, in an iteration of the Exploratory Data Analysis for that project.
 
 ## Set up
 
